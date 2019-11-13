@@ -4,7 +4,7 @@ import json
 from bson.json_util import dumps
 
 maker_parser = reqparse.RequestParser()
-maker_parser.add_argument('id')
+maker_parser.add_argument('id', type=int)
 maker_parser.add_argument('fullname')
 maker_parser.add_argument('maker')
 maker_parser.add_argument('countryname')
@@ -17,7 +17,7 @@ class MakerList(Resource):
 
     def post(self):
         args = maker_parser.parse_args()
-        maker = Maker(int(args["id"]), args["maker"], args["fullname"], Location(args["countryname"], args["continent"]))
+        maker = Maker(args["id"], args["maker"], args["fullname"], Location(args["countryname"], args["continent"]))
         db.insert_maker(maker)
         return maker.as_dict()
 
@@ -33,7 +33,7 @@ class MakerResource(Resource):
     def put(self, maker_id):
         maker_id = int(maker_id)
         args = maker_parser.parse_args()
-        maker = Maker(int(args["id"]), args["maker"], args["fullname"], Location(args["countryname"], args["continent"]))
+        maker = Maker(args["id"], args["maker"], args["fullname"], Location(args["countryname"], args["continent"]))
         db.update_maker(maker_id, maker)
         return maker.as_dict()
 

@@ -4,9 +4,18 @@ import json
 from bson.json_util import dumps
 
 car_parser = reqparse.RequestParser()
-car_parser.add_argument('id')
+car_parser.add_argument('id', type=int)
 car_parser.add_argument('model')
 car_parser.add_argument('descr')
+
+detail_parser = reqparse.RequestParser()
+detail_parser.add_argument("cylinders", type=int)
+detail_parser.add_argument("edispl", type=int)
+detail_parser.add_argument("weight", type=int)
+detail_parser.add_argument("accel", type=int)
+detail_parser.add_argument("year", type=int)
+detail_parser.add_argument("mpg", type=int)
+detail_parser.add_argument("horsepower", type=int)
 
 class CarList(Resource):
     def get(self):
@@ -14,14 +23,14 @@ class CarList(Resource):
 
     def post(self):
         args = car_parser.parse_args()
-        car = Car(int(args["id"]), args["model"], args["descr"])
+        car = Car(args["id"], args["model"], args["descr"])
         db.insert_car(car)
         return car.as_dict()
 
 class CarResource(Resource):
     def get(self, car_id):
         return json.loads(dumps(db.get_one_car(Car(id=int(car_id)))))
-        
+
     def delete(self, car_id):
         car_id = int(car_id)
         car = self.get(car_id)
@@ -31,9 +40,25 @@ class CarResource(Resource):
     def put(self, car_id):
         car_id = int(car_id)
         args = car_parser.parse_args()
-        car = Car(int(args["id"]), args["model"], args["descr"])
+        car = Car(args["id"], args["model"], args["descr"])
         db.update_car(car_id, car)
         return car.as_dict()
+
+class CarDetails(Resource):
+    def put(self, car_id):
+        car_id = int(car_id)
+        args = detail_parser.parse_args()
+        details = Details(
+            args["cylinders"],
+            args["edispl"],
+            args["weight"],
+            args["accel"],
+            args["year"],
+            args["mpg"],
+            args["horsepower"]
+        )
+        car = Car(details=details)
+        db.update_car(car_id, car)
 
 class Car:
     def __init__(self, id = None, model = None, descr = None, details = None):
@@ -54,13 +79,13 @@ class Car:
 
 class Details:
     def __init__(self, cylinders, edispl, weight, accel, year,mpg, horsepower):
-        self._cylinders
-        self._edispl
-        self._weight
-        self._accel
-        self._year
-        self._mpg
-        self._horsepower
+        self._cylinders = cylinders
+        self._edispl = edispl
+        self._weight = weight
+        self._accel = accel
+        self._year = year
+        self._mpg = mpg
+        self._horsepower = horsepower
 
     def as_dict(self):
         d = {
